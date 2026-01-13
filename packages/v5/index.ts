@@ -1,4 +1,10 @@
-import { BigNumber, Contract, providers, type BigNumberish } from "ethers";
+import {
+	BigNumber,
+	Contract,
+	utils,
+	providers,
+	type BigNumberish,
+} from "ethers";
 import {
 	getAddress,
 	hexlify,
@@ -17,6 +23,7 @@ import {
 	UR_PROXY,
 } from "../../src/shared.js";
 import { ens_normalize } from "@adraffy/ens-normalize";
+import { write } from "bun";
 
 export * from "ethers";
 
@@ -36,6 +43,11 @@ declare module "@ethersproject/providers" {
 const logger = new Logger("ur-patch");
 
 const ABI = new Interface(ABI_FRAGMENTS);
+
+Object.defineProperties(utils, {
+	dnsEncode: { value: dnsEncode },
+	namehash: { value: namehash },
+});
 
 providers.BaseProvider.prototype.getResolver = async function (name) {
 	const UR = new Contract(UR_PROXY, ABI, this);
@@ -102,6 +114,7 @@ function namesplit(name: string) {
 	return name ? name.split(".") : [];
 }
 
+// the original function is bad since it truncates at 63 characters
 function dnsEncode(name: string) {
 	const m = namesplit(name).map((x) => toUtf8Bytes(x));
 	const v = new Uint8Array(m.reduce((a, x) => a + 1 + x.length, 1));

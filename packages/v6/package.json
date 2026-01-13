@@ -1,5 +1,5 @@
 {
-	"name": "@ensdomains/ethers-v6",
+	"name": "@ensdomains/ethers-patch-v6",
 	"version": "0.0.1",
 	"type": "module",
 	"main": "dist/index.cjs",

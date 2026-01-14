@@ -1,6 +1,6 @@
 {
 	"name": "@ensdomains/ethers-patch-v6",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"type": "module",
 	"main": "dist/index.cjs",
 	"module": "dist/index.js",
@@ -15,10 +15,8 @@
 		}
 	},
 	"peerDependencies": {
-		"typescript": "^5"
-	},
-	"dependencies": {
-		"ethers": "^6.0.0"
+		"typescript": "^5",
+		"ethers": "6"
 	},
 	"publishConfig": {
 		"access": "public"

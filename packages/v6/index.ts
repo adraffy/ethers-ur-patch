@@ -42,6 +42,7 @@ declare module "ethers" {
 
 const ABI = new Interface(ABI_FRAGMENTS);
 
+// note: AbstractProvider.getResolver() is effectively EnsResolver.fromName()
 EnsResolver.fromNameOld = EnsResolver.fromName;
 //const { fromName } = EnsResolver;
 EnsResolver.fromName = async function (provider, name) {
@@ -70,7 +71,11 @@ AbstractProvider.prototype.resolveName = async function (
 	coinType = getBigInt(coinType, "coinType");
 	const fwd = await this.getResolver(name);
 	if (!fwd) return null;
-	return fetchAddress(fwd, coinType).catch(() => null);
+	try {
+		const a = await fetchAddress(fwd, coinType);
+		if (!/^0x0+$/.test(a)) return a;
+	} catch {}
+	return null;
 };
 
 AbstractProvider.prototype.lookupAddress = async function (
@@ -125,18 +130,17 @@ AbstractProvider.prototype.lookupAddress = async function (
 async function fetchAddress(resolver: EnsResolver, coinType: bigint) {
 	if (coinType === COIN_TYPE_ETH) {
 		return callResolver<string>(resolver, "addr(bytes32)");
-	} else {
-		const a = await callResolver<string>(
-			resolver,
-			"addr(bytes32,uint256)",
-			coinType
-		);
-		return isEVMCoinType(coinType)
-			? a === "0x"
-				? a.padEnd(42)
-				: getAddress(a)
-			: a;
 	}
+	const a = await callResolver<string>(
+		resolver,
+		"addr(bytes32,uint256)",
+		coinType
+	);
+	return isEVMCoinType(coinType)
+		? a === "0x"
+			? a.padEnd(42)
+			: getAddress(a)
+		: a;
 }
 
 async function callResolver<T>(

@@ -95,7 +95,11 @@ providers.BaseProvider.prototype.resolveName = async function (
 	}
 	const fwd = await this.getResolver(name);
 	if (!fwd) return null;
-	return fetchAddress(fwd, coinType).catch(() => null);
+	try {
+		const a = await fetchAddress(fwd, coinType);
+		if (!/^0x0+$/.test(a)) return a;
+	} catch {}
+	return null;
 };
 
 providers.BaseProvider.prototype.lookupAddress = async function (

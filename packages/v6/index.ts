@@ -149,20 +149,12 @@ async function callResolver<T>(
 	...args: any[]
 ): Promise<T> {
 	const f = ABI.getFunction(fragment)!;
-	const r = new Contract(resolver.address, ABI, resolver.provider);
-	if (await resolver.supportsWildcard()) {
-		const res: any = ABI.decodeFunctionResult(
-			f,
-			await r.resolve(
-				dnsEncode(resolver.name, 255),
-				ABI.encodeFunctionData(f, [namehash(resolver.name), ...args]),
-				{ enableCcipRead: true },
-			),
-		);
-		return f.outputs.length === 1 ? res[0] : res;
-	} else {
-		return r[f.format()](namehash(resolver.name), ...args, {
-			enableCcipRead: true,
-		});
-	}
+	const dns = dnsEncode(resolver.name, 255);
+	const calldata = ABI.encodeFunctionData(f, [namehash(resolver.name), ...args]);
+	const UR = new Contract(UR_PROXY, ABI, resolver.provider);
+	const res: any = ABI.decodeFunctionResult(
+		f,
+		await UR.resolve(dns, calldata, { enableCcipRead: true }),
+	);
+	return f.outputs.length === 1 ? res[0] : res;
 }

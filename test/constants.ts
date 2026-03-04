@@ -12,3 +12,6 @@ export const ADDR_DNE = "0x00000000000000000000000000000000DeaDBeef"; // address
 export const NAME_UNNORM = "unnorm_"; // name that doesn't normalize
 
 export const NAME_UNSET = "tog.raffy.eth"; // name w/o addr(60)
+
+export const NAME_UR_TEST = "ur.gtest.eth"; // universal resolver test
+export const ADDR_UR_TEST = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";

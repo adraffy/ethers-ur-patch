@@ -9,6 +9,8 @@ import {
 	ADDR_DNE,
 	NAME_UNSET,
 	NAME_ZERO,
+	NAME_UR_TEST,
+	ADDR_UR_TEST,
 } from "./constants.js";
 import { COIN_TYPE_DEFAULT } from "../src/shared.js";
 import { requireThrow } from "./utils.js";
@@ -66,6 +68,12 @@ describe("v5", () => {
 			expect(
 				provider.resolveName(NAME, COIN_TYPE_DEFAULT),
 			).resolves.toStrictEqual(ADDR);
+		});
+
+		test("universal resolver", () => {
+			expect(provider.resolveName(NAME_UR_TEST)).resolves.toStrictEqual(
+				ADDR_UR_TEST,
+			);
 		});
 
 		test("zero evm", async () => {

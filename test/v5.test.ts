@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import "../packages/v5/index.js";
-import {ethers} from "ethers";
+import { ethers } from "../packages/v5/index.js";
 import {
 	RPC_URL,
 	NAME,

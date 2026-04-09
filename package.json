@@ -1,6 +1,6 @@
 {
 	"name": "@ensdomains/ethers-patch",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"type": "module",
 	"private": true,
 	"devDependencies": {
@@ -12,8 +12,9 @@
 	],
 	"scripts": {
 		"build:v5": "cd packages/v5 && tsup index.ts --dts --format esm,cjs --out-dir dist",
+		"build:v5-no-utils": "cd packages/v5-no-utils && tsup index.ts --dts --format esm,cjs --out-dir dist",
 		"build:v6": "cd packages/v6 && tsup index.ts --dts --format esm,cjs --out-dir dist",
-		"build": "bun run build:v5 && bun run build:v6",
+		"build": "bun run build:v5 && bun run build:v5-no-utils && bun run build:v6",
 		"apply": "bun src/apply.ts"
 	}
 }

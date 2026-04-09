@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import "../packages/v5/index.js";
-import {ethers} from "ethers";
+import "../packages/v5-no-utils/index.js";
+import * as providers from "@ethersproject/providers";
 import {
 	RPC_URL,
 	NAME,
@@ -14,27 +14,14 @@ import {
 import { COIN_TYPE_DEFAULT } from "../src/shared.js";
 import { requireThrow } from "./utils.js";
 
-describe("v5", () => {
-	const provider = new ethers.providers.JsonRpcProvider(RPC_URL, 1);
-
-	test("namehash", () => {
-		ethers.utils.namehash(""); // normally throws
-	});
-
-	test("dnsEncode", () => {
-		ethers.utils.dnsEncode("a".repeat(64)); // normally throws
-	});
-
-	test("ensNormalize", () => {
-		const emoji = "\u{1F6D8}"; // unicode 17
-		expect(ethers.utils.ensNormalize(emoji)).toStrictEqual(emoji); // normally not exposed
-	});
+describe("v5-no-utils", () => {
+	const provider = new providers.JsonRpcProvider(RPC_URL, 1);
 
 	describe("getResolver", () => {
 		test("supportsWildcard()", async () => {
 			const r0 = (await provider.getResolverOld(NAME))!;
 			const r1 = (await provider.getResolver(NAME))!;
-			expect(Bun.peek.status(r0.supportsWildcard())).toStrictEqual("pending");
+			// expect(Bun.peek.status(r0.supportsWildcard())).toStrictEqual("pending"); // disabled due to double patching
 			expect(Bun.peek.status(r1.supportsWildcard())).toStrictEqual("fulfilled");
 		});
 
@@ -100,14 +87,14 @@ describe("v5", () => {
 		});
 
 		test("unimplemented", async () => {
-			const p = new ethers.providers.BaseProvider(1);
+			const p = new providers.BaseProvider(1);
 			const a = await p.resolveName(NAME, "old");
 			const b = await p.resolveName(NAME);
 			expect(a).toStrictEqual(b);
 		});
 
 		test("error", async () => {
-			const p = new ethers.providers.BaseProvider(1);
+			const p = new providers.BaseProvider(1);
 			p.call = () => Promise.reject();
 			const a = await p.resolveName(NAME, "old");
 			const b = await p.resolveName(NAME);

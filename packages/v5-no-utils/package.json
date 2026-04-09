@@ -1,5 +1,5 @@
 {
-	"name": "@ensdomains/ethers-patch-v5",
+	"name": "@ensdomains/ethers-patch-v5-no-utils",
 	"version": "0.0.5",
 	"type": "module",
 	"main": "dist/index.cjs",
@@ -16,8 +16,16 @@
 	},
 	"peerDependencies": {
 		"typescript": "^5",
-		"ethers": "5",
-		"@ethersproject/providers": "5"
+		"@ethersproject/abi": "5",
+		"@ethersproject/address": "5",
+		"@ethersproject/bignumber": "5",
+		"@ethersproject/bytes": "5",
+		"@ethersproject/contracts": "5",
+		"@ethersproject/hash": "5",
+		"@ethersproject/keccak256": "5",
+		"@ethersproject/logger": "5",
+		"@ethersproject/providers": "5",
+		"@ethersproject/strings": "5"
 	},
 	"dependencies": {
 		"@adraffy/ens-normalize": "^1.11.1"

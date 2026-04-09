@@ -1,20 +1,13 @@
-import {
-	BigNumber,
-	Contract,
-	utils,
-	providers,
-	type BigNumberish,
-} from "ethers";
-import {
-	getAddress,
-	hexlify,
-	id as labelhash,
-	Interface,
-	isHexString,
-	keccak256,
-	Logger,
-	toUtf8Bytes,
-} from "ethers/lib/utils";
+import { Interface } from "@ethersproject/abi";
+import { getAddress } from "@ethersproject/address";
+import { type BigNumberish, BigNumber } from "@ethersproject/bignumber";
+import { hexlify, isHexString } from "@ethersproject/bytes";
+import { Contract } from "@ethersproject/contracts";
+import { id as labelhash } from "@ethersproject/hash";
+import { keccak256 } from "@ethersproject/keccak256";
+import { Logger } from "@ethersproject/logger";
+import * as providers from "@ethersproject/providers";
+import { toUtf8Bytes } from "@ethersproject/strings";
 import {
 	ABI_FRAGMENTS,
 	COIN_TYPE_ETH,
@@ -23,12 +16,6 @@ import {
 	UR_PROXY,
 } from "../../src/shared.js";
 import { ens_normalize } from "@adraffy/ens-normalize";
-
-export * from "ethers";
-
-declare module "ethers/lib/utils" {
-	function ensNormalize(name: string): string;
-}
 
 declare module "@ethersproject/providers" {
 	interface BaseProvider {
@@ -59,12 +46,6 @@ let logger = new Logger("ur-patch");
 }
 
 const ABI = new Interface(ABI_FRAGMENTS);
-
-Object.defineProperties(utils, {
-	dnsEncode: { value: dnsEncode },
-	namehash: { value: namehash },
-	ensNormalize: { value: ens_normalize },
-});
 
 const { getResolver, resolveName, lookupAddress } =
 	providers.BaseProvider.prototype;

@@ -13,6 +13,8 @@ import {
 import { COIN_TYPE_DEFAULT } from "../src/shared.js";
 import { requireThrow } from "./utils.js";
 
+await import(new URL("../packages/v5/index.js?again", import.meta.url).pathname);
+
 describe("v5", () => {
 	const provider = new ethers.providers.JsonRpcProvider(RPC_URL, 1);
 

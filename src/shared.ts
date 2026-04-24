@@ -1,6 +1,10 @@
 // exists on MAINNET and SEPOLIA
 export const UR_PROXY = "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe";
 
+export const LOCAL_BATCH_GATEWAY = "x-batch-gateway:true";
+
+export const EXTERNAL_BATCH_GATEWAY_ERROR = "batch gateway failed";
+
 export const ABI_FRAGMENTS = [
 	// AbstractUniversalResolver
 	"function requireResolver(bytes) view returns ((bytes name, uint256 offset, bytes32 node, address resolver, bool extended))",
@@ -12,6 +16,8 @@ export const ABI_FRAGMENTS = [
 	"function addr(bytes32) view returns (address)",
 	// IAddressResolver
 	"function addr(bytes32, uint256) view returns (bytes)",
+	// IBatchGateway
+	`function query((address, string[], bytes)[]) view returns (bool[], bytes[])`,
 ];
 
 export const COIN_TYPE_ETH = 60n;

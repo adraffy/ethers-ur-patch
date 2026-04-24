@@ -18,15 +18,19 @@ import "@ensdomains/ethers-patch-v5"; // or "-v6"
     * use `coinType = "old"` for unpatched implementation
 * `lookupAddress()` supports optional `coinType`
     * use `coinType = "old"` for unpatched implementation
-* [ENSIP-10](https://docs.ens.domains/ensip/10) implementation uses `UniversalResolver.requireResolver()`
 * `{Ens}Resolver.supportsWildcard()` is noop
-* [v5](./packages/v5/index.ts)
+* [ENSIP-10](https://docs.ens.domains/ensip/10) implementation uses `UniversalResolver.requireResolver()`
+* CCIP-Read tunneling for [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP)
+    1. `Content-Security-Policy: connect-src <gateway>`
+    2. `<provider>.setTunnelingBatchGateways([<gateway>])` 
+    3. CCIP-Read fetches are tunnelled through `<gateway>`
+* [v5](./packages/v5/index.ts)-specific
     * use `getResolverOld()` for unpatched implementation
     * updated normalization to [@adraffy/ens-normalize](https://github.com/adraffy/ens-normalize.js)
     * `namehash()` is patched
     * `dnsEncode()` is patched and uses 255-byte limit
     * `ensNormalize()` is exposed
-* [v6](./packages/v5/index.ts)
+* [v6](./packages/v5/index.ts)-specific
     * use `fromNameOld()` for unpatched implementation
 
 #### Roadmap 

@@ -18,13 +18,17 @@ import {
 import {
 	ABI_FRAGMENTS,
 	COIN_TYPE_ETH,
+	EXTERNAL_BATCH_GATEWAY_ERROR,
 	getReverseName,
 	isEVMCoinType,
+	LOCAL_BATCH_GATEWAY,
 	UR_PROXY,
 } from "../../src/shared.js";
 import { ens_normalize } from "@adraffy/ens-normalize";
 
 export * from "ethers";
+
+const TUNNEL_STORAGE = Symbol("tunnelingBatchGateways");
 
 declare module "ethers/lib/utils" {
 	function ensNormalize(name: string): string;
@@ -41,13 +45,19 @@ declare module "@ethersproject/providers" {
 			address: string | Promise<string>,
 			coinType?: BigNumberish,
 		): Promise<string | null>;
+		setTunnelingBatchGateways(urls: string[]): void;
+		getTunnelingBatchGateways(): string[];
 	}
 }
 
-if (!providers.BaseProvider.prototype.getResolverOld) {
+interface TunnelProvider extends providers.BaseProvider {
+	[TUNNEL_STORAGE]?: string[];
+}
 
+if (!providers.BaseProvider.prototype.getResolverOld) {
 	// capture address logger
-	let logger = new Logger("ur-patch");
+	const logger0 = new Logger("ethers-patch");
+	let logger = logger0;
 	{
 		const { makeError } = Logger.prototype;
 		Logger.prototype.makeError = function () {
@@ -68,8 +78,58 @@ if (!providers.BaseProvider.prototype.getResolverOld) {
 		ensNormalize: { value: ens_normalize },
 	});
 
-	const { getResolver, resolveName, lookupAddress } =
+	const { getResolver, resolveName, lookupAddress, ccipReadFetch } =
 		providers.BaseProvider.prototype;
+
+	const tunnellingCcipReadFetch: typeof ccipReadFetch = async function (
+		this: providers.BaseProvider,
+		tx,
+		calldata,
+		urls,
+	) {
+		if (this.disableCcipRead || !urls.length || !tx.to) {
+			return null;
+		}
+		const tunnels = this.getTunnelingBatchGateways();
+		if (urls.includes(LOCAL_BATCH_GATEWAY)) {
+			return ccipReadFetch.call(this, tx, calldata, tunnels);
+		}
+		const sender = tx.to.toLowerCase();
+		const response = await ccipReadFetch.call(
+			this,
+			tx,
+			ABI.encodeFunctionData("query", [[[sender, urls, calldata]]]),
+			tunnels,
+		);
+		if (!response) return null;
+		const [failures, responses] = ABI.decodeFunctionResult("query", response);
+		if (failures[0]) {
+			const error = `${EXTERNAL_BATCH_GATEWAY_ERROR}: ${responses[0]}`;
+			return logger0.throwError(
+				`error encountered during CCIP fetch: ${error}`,
+				Logger.errors.SERVER_ERROR,
+				{
+					urls,
+					errorMessages: [error],
+				},
+			);
+		}
+		return responses[0];
+	};
+
+	providers.BaseProvider.prototype.setTunnelingBatchGateways = function (
+		this: TunnelProvider,
+		urls,
+	) {
+		this[TUNNEL_STORAGE] = urls.length ? urls : undefined;
+		this.ccipReadFetch = urls ? tunnellingCcipReadFetch : (undefined as any);
+	};
+
+	providers.BaseProvider.prototype.getTunnelingBatchGateways = function (
+		this: TunnelProvider,
+	) {
+		return this[TUNNEL_STORAGE] ?? [];
+	};
 
 	providers.BaseProvider.prototype.getResolverOld = getResolver;
 	providers.BaseProvider.prototype.getResolver = async function (name) {
@@ -80,7 +140,7 @@ if (!providers.BaseProvider.prototype.getResolverOld) {
 			const resolver = new providers.Resolver(this, result.resolver, name);
 			resolver._supportsEip2544 = Promise.resolve(result.extended);
 			return resolver;
-		} catch (err) {
+		} catch {
 			return null;
 		}
 	};
@@ -100,7 +160,9 @@ if (!providers.BaseProvider.prototype.getResolverOld) {
 		try {
 			const a = await fetchAddress(fwd, coinType);
 			if (!/^0x0+$/.test(a)) return a;
-		} catch {}
+		} catch (err: any) {
+			if (err.code !== Logger.errors.CALL_EXCEPTION) throw err;
+		}
 		return null;
 	};
 
@@ -199,5 +261,4 @@ if (!providers.BaseProvider.prototype.getResolverOld) {
 			return r[f.format()](node, ...args, { ccipReadEnabled: true });
 		}
 	}
-
 }
